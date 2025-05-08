@@ -3,68 +3,27 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Gestion de Stock - AFRICA FOOD</title>
+  <title>AFRICA FOOD - Gestion de Stock</title>
   <style>
-    body {
-      font-family: Arial, sans-serif;
-      margin: 0;
-      background: #fff;
-      color: #333;
-    }
-    header {
-      background-color: #b30000;
-      color: white;
-      padding: 20px;
-      text-align: center;
-    }
-    nav {
-      display: flex;
-      justify-content: center;
-      background-color: #f8f8f8;
-    }
+    body { font-family: Arial, sans-serif; margin: 0; background: #fff; color: #333; }
+    header { background-color: #b30000; color: white; padding: 20px; text-align: center; }
+    nav { display: flex; justify-content: center; background-color: #f8f8f8; }
     nav button {
-      background: none;
-      border: none;
-      padding: 15px 25px;
-      cursor: pointer;
-      font-weight: bold;
-      color: #b30000;
+      background: none; border: none; padding: 15px 25px;
+      cursor: pointer; font-weight: bold; color: #b30000;
       border-bottom: 3px solid transparent;
     }
-    nav button.active {
-      border-bottom: 3px solid #b30000;
-    }
-    section {
-      display: none;
-      padding: 20px;
-    }
-    section.active {
-      display: block;
-    }
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 10px;
-    }
-    th, td {
-      border: 1px solid #ccc;
-      padding: 10px;
-      text-align: left;
-    }
-    th {
-      background-color: #ffe5e5;
-    }
+    nav button.active { border-bottom: 3px solid #b30000; }
+    section { display: none; padding: 20px; }
+    section.active { display: block; }
+    table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+    th, td { border: 1px solid #ccc; padding: 10px; text-align: left; }
+    th { background-color: #ffe5e5; }
     .btn {
-      padding: 5px 10px;
-      background-color: #b30000;
-      color: white;
-      border: none;
-      cursor: pointer;
-      margin: 2px;
+      padding: 5px 10px; background-color: #b30000;
+      color: white; border: none; cursor: pointer; margin: 2px;
     }
-    .btn:hover {
-      background-color: #8b0000;
-    }
+    .btn:hover { background-color: #8b0000; }
   </style>
 </head>
 <body>
@@ -81,9 +40,7 @@
   <section id="store" class="active">
     <h2>Store de base</h2>
     <table>
-      <thead>
-        <tr><th>Boisson</th><th>Stock initial</th><th>Actions</th></tr>
-      </thead>
+      <thead><tr><th>Boisson</th><th>Stock initial</th><th>Actions</th></tr></thead>
       <tbody id="store-table"></tbody>
     </table>
   </section>
@@ -91,9 +48,7 @@
   <section id="stock">
     <h2>Stock Réel</h2>
     <table>
-      <thead>
-        <tr><th>Boisson</th><th>Quantité restante</th></tr>
-      </thead>
+      <thead><tr><th>Boisson</th><th>Quantité restante</th></tr></thead>
       <tbody id="stock-table"></tbody>
     </table>
   </section>
@@ -101,9 +56,7 @@
   <section id="consumption">
     <h2>Consommation</h2>
     <table>
-      <thead>
-        <tr><th>Boisson</th><th>Quantité consommée</th><th>Action</th></tr>
-      </thead>
+      <thead><tr><th>Boisson</th><th>Quantité consommée</th><th>Action</th></tr></thead>
       <tbody id="consumption-table"></tbody>
     </table>
   </section>
@@ -111,38 +64,52 @@
   <script>
     const boissons = [
       "Eau plate (Evian, Cristaline…) 50 cl",
-      "Eau plate 1 L",
-      "Eau gazeuse Perrier 50 cl",
-      "Eau gazeuse 1L",
-      "Coca-Cola 33 cl",
-      "Coca Zéro 33 cl",
-      "Orangina 33 cl",
-      "Schweppes 33 cl",
-      "Oasis 33 cl",
-      "Ice Tea 33 cl",
-      "Bouteille vin rouge",
-      "Champage",
-      "Bouteille vin blanc",
-      "Rosé",
-      "Whisky (Ballantine’s)",
-      "Whisky (JB )",
-      "Whisky supérieur (Jack Daniel)",
-      "Whisky supérieur (Chivas)",
-      "Ricard",
-      "Rhum blanc ambré"
+      "Eau plate 1 L", "Eau gazeuse Perrier 50 cl", "Eau gazeuse 1L",
+      "Coca-Cola 33 cl", "Coca Zéro 33 cl", "Orangina 33 cl",
+      "Schweppes 33 cl", "Oasis 33 cl", "Ice Tea 33 cl",
+      "Bouteille vin rouge", "Champage", "Bouteille vin blanc",
+      "Rosé", "Whisky (Ballantine’s)", "Whisky (JB )",
+      "Whisky supérieur (Jack Daniel)", "Whisky supérieur (Chivas)",
+      "Ricard", "Rhum blanc ambré"
     ];
 
-    const stockDeBase = {};
-    const consommation = {};
+    let stockDeBase = {};
+    let consommation = {};
 
-    boissons.forEach(nom => {
-      stockDeBase[nom] = 0;
-      consommation[nom] = 0;
-    });
+    // Fonction utilitaire
+    function getTodayKey() {
+      const today = new Date();
+      return today.toISOString().split('T')[0]; // ex: "2025-05-08"
+    }
 
-    const storeTable = document.getElementById("store-table");
-    const stockTable = document.getElementById("stock-table");
-    const consumptionTable = document.getElementById("consumption-table");
+    function saveData() {
+      const allData = JSON.parse(localStorage.getItem("stockData31") || "{}");
+      const todayKey = getTodayKey();
+      allData[todayKey] = { stockDeBase, consommation };
+
+      // Garder les 31 derniers jours
+      const dates = Object.keys(allData).sort();
+      while (dates.length > 31) {
+        delete allData[dates[0]];
+        dates.shift();
+      }
+
+      localStorage.setItem("stockData31", JSON.stringify(allData));
+    }
+
+    function loadData() {
+      const allData = JSON.parse(localStorage.getItem("stockData31") || "{}");
+      const todayKey = getTodayKey();
+      if (allData[todayKey]) {
+        stockDeBase = allData[todayKey].stockDeBase;
+        consommation = allData[todayKey].consommation;
+      } else {
+        boissons.forEach(b => {
+          stockDeBase[b] = 0;
+          consommation[b] = 0;
+        });
+      }
+    }
 
     function refreshUI() {
       storeTable.innerHTML = "";
@@ -162,16 +129,11 @@
           </tr>
         `;
 
-        // Stock réel (stock - consommation)
-        const stockRestant = stockDeBase[nom] - consommation[nom];
+        const restant = stockDeBase[nom] - consommation[nom];
         stockTable.innerHTML += `
-          <tr>
-            <td>${nom}</td>
-            <td>${Math.max(0, stockRestant)}</td>
-          </tr>
+          <tr><td>${nom}</td><td>${Math.max(0, restant)}</td></tr>
         `;
 
-        // Consommation
         consumptionTable.innerHTML += `
           <tr>
             <td>${nom}</td>
@@ -183,20 +145,22 @@
     }
 
     function modifierStock(boisson, valeur) {
-      stockDeBase[boisson] = Math.max(0, stockDeBase[boisson] + valeur);
+      stockDeBase[boisson] = Math.max(0, (stockDeBase[boisson] || 0) + valeur);
+      saveData();
       refreshUI();
     }
 
     function consommer(boisson) {
-      if (stockDeBase[boisson] - consommation[boisson] > 0) {
+      const restant = stockDeBase[boisson] - consommation[boisson];
+      if (restant > 0) {
         consommation[boisson]++;
+        saveData();
         refreshUI();
       } else {
-        alert("Plus de stock disponible pour : " + boisson);
+        alert("Plus de stock pour : " + boisson);
       }
     }
 
-    // Changement d'onglet
     document.querySelectorAll(".tab-btn").forEach(btn => {
       btn.addEventListener("click", () => {
         document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
@@ -210,12 +174,12 @@
     setInterval(() => {
       const now = new Date();
       if (now.getHours() === 23 && now.getMinutes() === 45 && now.getSeconds() === 0) {
-        alert("Rappel : Pense à faire la mise à jour du stock !");
-        console.log("Stock actuel :", stockDeBase);
-        console.log("Consommation du jour :", consommation);
+        alert("Rappel : mise à jour du stock du jour !");
       }
     }, 1000);
 
+    loadData();
     refreshUI();
   </script>
 </body>
+</html>
