@@ -1,0 +1,168 @@
+<!DOCTYPE html><html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Gestion de Stock - AFRICA FOOD</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      background: #fff;
+      color: #333;
+    }
+    header {
+      background-color: #b30000;
+      color: white;
+      padding: 20px;
+      text-align: center;
+    }
+    nav {
+      display: flex;
+      justify-content: center;
+      background-color: #f8f8f8;
+    }
+    nav button {
+      background: none;
+      border: none;
+      padding: 15px 25px;
+      cursor: pointer;
+      font-weight: bold;
+      color: #b30000;
+      border-bottom: 3px solid transparent;
+    }
+    nav button.active {
+      border-bottom: 3px solid #b30000;
+    }
+    section {
+      display: none;
+      padding: 20px;
+    }
+    section.active {
+      display: block;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+    }
+    th, td {
+      border: 1px solid #ccc;
+      padding: 10px;
+      text-align: left;
+    }
+    th {
+      background-color: #ffe5e5;
+    }
+    .btn {
+      padding: 5px 10px;
+      margin: 5px 0;
+      background-color: #b30000;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+    .btn:hover {
+      background-color: #8b0000;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>AFRICA FOOD - Gestion de Stock</h1>
+  </header>
+  <nav>
+    <button class="tab-btn active" data-target="store">Store de base</button>
+    <button class="tab-btn" data-target="stock">Stock réel</button>
+    <button class="tab-btn" data-target="consumption">Consommation</button>
+  </nav>  <section id="store" class="active">
+    <h2>Liste des Boissons</h2>
+    <ul id="boisson-list"></ul>
+  </section>  <section id="stock">
+    <h2>Stock Réel</h2>
+    <table>
+      <thead>
+        <tr><th>Boisson</th><th>Quantité</th></tr>
+      </thead>
+      <tbody id="stock-table"></tbody>
+    </table>
+  </section>  <section id="consumption">
+    <h2>Consommation</h2>
+    <table>
+      <thead>
+        <tr><th>Boisson</th><th>Quantité utilisée</th></tr>
+      </thead>
+      <tbody id="consumption-table"></tbody>
+    </table>
+  </section>  <script>
+    const boissons = [
+      "Eau plate (Evian, Cristaline…) 50 cl",
+      "Eau plate 1 L",
+      "Eau gazeuse Perrier 50 cl",
+      "Eau gazeuse 1L",
+      "Coca-Cola 33 cl",
+      "Coca Zéro 33 cl",
+      "Orangina 33 cl",
+      "Schweppes 33 cl",
+      "Oasis 33 cl",
+      "Ice Tea 33 cl",
+      "Bouteille vin rouge",
+      "Champage",
+      "Bouteille vin blanc",
+      "Rosé",
+      "Whisky (Ballantine’s)",
+      "Whisky (JB )",
+      "Whisky supérieur (Jack Daniel)",
+      "Whisky supérieur (Chivas)",
+      "Ricard",
+      "Rhum blanc ambré"
+    ];
+
+    const stock = {};
+    const consommation = {};
+
+    boissons.forEach(nom => {
+      stock[nom] = 0;
+      consommation[nom] = 0;
+    });
+
+    const boissonList = document.getElementById("boisson-list");
+    const stockTable = document.getElementById("stock-table");
+    const consumptionTable = document.getElementById("consumption-table");
+
+    function refreshUI() {
+      boissonList.innerHTML = "";
+      stockTable.innerHTML = "";
+      consumptionTable.innerHTML = "";
+
+      boissons.forEach(nom => {
+        boissonList.innerHTML += `<li>${nom}</li>`;
+        stockTable.innerHTML += `<tr><td>${nom}</td><td>${stock[nom]}</td></tr>`;
+        consumptionTable.innerHTML += `<tr><td>${nom}</td><td>${consommation[nom]}</td></tr>`;
+      });
+    }
+
+    refreshUI();
+
+    // Tabs
+    const tabButtons = document.querySelectorAll(".tab-btn");
+    const sections = document.querySelectorAll("section");
+    tabButtons.forEach(btn => {
+      btn.addEventListener("click", () => {
+        tabButtons.forEach(b => b.classList.remove("active"));
+        sections.forEach(s => s.classList.remove("active"));
+        btn.classList.add("active");
+        document.getElementById(btn.dataset.target).classList.add("active");
+      });
+    });
+
+    // Rappel à 23h45
+    setInterval(() => {
+      const now = new Date();
+      if (now.getHours() === 23 && now.getMinutes() === 45 && now.getSeconds() === 0) {
+        alert("Rappel : Mise à jour du stock à 23h45");
+        console.log("Stock complet:", stock);
+        console.log("Consommation du jour:", consommation);
+      }
+    }, 1000);
+  </script></body>
+</html>
