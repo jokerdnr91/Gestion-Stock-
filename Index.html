@@ -7,7 +7,7 @@
   <style>
     body { font-family: Arial, sans-serif; margin: 0; background: #fff; color: #333; }
     header { background-color: #b30000; color: white; padding: 20px; text-align: center; }
-    nav { display: flex; justify-content: center; background-color: #f8f8f8; }
+    nav { display: flex; justify-content: center; background-color: #f8f8f8; flex-wrap: wrap; }
     nav button {
       background: none; border: none; padding: 15px 25px;
       cursor: pointer; font-weight: bold; color: #b30000;
@@ -24,6 +24,7 @@
       color: white; border: none; cursor: pointer; margin: 2px;
     }
     .btn:hover { background-color: #8b0000; }
+    .history-day { margin-top: 20px; border-top: 2px solid #ccc; padding-top: 10px; }
   </style>
 </head>
 <body>
@@ -35,6 +36,7 @@
     <button class="tab-btn active" data-target="store">Store de base</button>
     <button class="tab-btn" data-target="stock">Stock réel</button>
     <button class="tab-btn" data-target="consumption">Consommation</button>
+    <button class="tab-btn" data-target="history">Historique</button>
   </nav>
 
   <section id="store" class="active">
@@ -61,6 +63,11 @@
     </table>
   </section>
 
+  <section id="history">
+    <h2>Historique sur 31 jours</h2>
+    <div id="history-content"></div>
+  </section>
+
   <script>
     const boissons = [
       "Eau plate (Evian, Cristaline…) 50 cl",
@@ -73,36 +80,30 @@
       "Ricard", "Rhum blanc ambré"
     ];
 
-    let stockDeBase = {};
-    let consommation = {};
+    let stockDeBase = {}, consommation = {};
 
-    // Fonction utilitaire
     function getTodayKey() {
-      const today = new Date();
-      return today.toISOString().split('T')[0]; // ex: "2025-05-08"
+      return new Date().toISOString().split('T')[0];
     }
 
     function saveData() {
       const allData = JSON.parse(localStorage.getItem("stockData31") || "{}");
-      const todayKey = getTodayKey();
-      allData[todayKey] = { stockDeBase, consommation };
-
-      // Garder les 31 derniers jours
+      const today = getTodayKey();
+      allData[today] = { stockDeBase, consommation };
       const dates = Object.keys(allData).sort();
       while (dates.length > 31) {
         delete allData[dates[0]];
         dates.shift();
       }
-
       localStorage.setItem("stockData31", JSON.stringify(allData));
     }
 
     function loadData() {
       const allData = JSON.parse(localStorage.getItem("stockData31") || "{}");
-      const todayKey = getTodayKey();
-      if (allData[todayKey]) {
-        stockDeBase = allData[todayKey].stockDeBase;
-        consommation = allData[todayKey].consommation;
+      const today = getTodayKey();
+      if (allData[today]) {
+        stockDeBase = allData[today].stockDeBase;
+        consommation = allData[today].consommation;
       } else {
         boissons.forEach(b => {
           stockDeBase[b] = 0;
@@ -117,7 +118,6 @@
       consumptionTable.innerHTML = "";
 
       boissons.forEach(nom => {
-        // Store de base
         storeTable.innerHTML += `
           <tr>
             <td>${nom}</td>
@@ -128,12 +128,9 @@
             </td>
           </tr>
         `;
-
-        const restant = stockDeBase[nom] - consommation[nom];
         stockTable.innerHTML += `
-          <tr><td>${nom}</td><td>${Math.max(0, restant)}</td></tr>
+          <tr><td>${nom}</td><td>${Math.max(0, stockDeBase[nom] - consommation[nom])}</td></tr>
         `;
-
         consumptionTable.innerHTML += `
           <tr>
             <td>${nom}</td>
@@ -142,17 +139,34 @@
           </tr>
         `;
       });
+
+      // Historique
+      const allData = JSON.parse(localStorage.getItem("stockData31") || "{}");
+      const historyDiv = document.getElementById("history-content");
+      historyDiv.innerHTML = "";
+
+      Object.keys(allData).sort().reverse().forEach(date => {
+        let html = `<div class="history-day"><h3>Date : ${date}</h3>`;
+        html += `<table><thead><tr><th>Boisson</th><th>Stock</th><th>Consommé</th><th>Restant</th></tr></thead><tbody>`;
+        boissons.forEach(nom => {
+          const stock = allData[date].stockDeBase[nom] || 0;
+          const cons = allData[date].consommation[nom] || 0;
+          const reste = Math.max(0, stock - cons);
+          html += `<tr><td>${nom}</td><td>${stock}</td><td>${cons}</td><td>${reste}</td></tr>`;
+        });
+        html += "</tbody></table></div>";
+        historyDiv.innerHTML += html;
+      });
     }
 
-    function modifierStock(boisson, valeur) {
-      stockDeBase[boisson] = Math.max(0, (stockDeBase[boisson] || 0) + valeur);
+    function modifierStock(boisson, val) {
+      stockDeBase[boisson] = Math.max(0, (stockDeBase[boisson] || 0) + val);
       saveData();
       refreshUI();
     }
 
     function consommer(boisson) {
-      const restant = stockDeBase[boisson] - consommation[boisson];
-      if (restant > 0) {
+      if ((stockDeBase[boisson] - consommation[boisson]) > 0) {
         consommation[boisson]++;
         saveData();
         refreshUI();
