@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Gestion de Stock - AFRICA FOOD</title>
   <style>
     body {
@@ -56,11 +56,11 @@
     }
     .btn {
       padding: 5px 10px;
-      margin: 5px 0;
       background-color: #b30000;
       color: white;
       border: none;
       cursor: pointer;
+      margin: 2px;
     }
     .btn:hover {
       background-color: #8b0000;
@@ -71,6 +71,7 @@
   <header>
     <h1>AFRICA FOOD - Gestion de Stock</h1>
   </header>
+
   <nav>
     <button class="tab-btn active" data-target="store">Store de base</button>
     <button class="tab-btn" data-target="stock">Stock réel</button>
@@ -78,15 +79,20 @@
   </nav>
 
   <section id="store" class="active">
-    <h2>Liste des Boissons</h2>
-    <ul id="boisson-list"></ul>
+    <h2>Store de base</h2>
+    <table>
+      <thead>
+        <tr><th>Boisson</th><th>Stock initial</th><th>Actions</th></tr>
+      </thead>
+      <tbody id="store-table"></tbody>
+    </table>
   </section>
 
   <section id="stock">
     <h2>Stock Réel</h2>
     <table>
       <thead>
-        <tr><th>Boisson</th><th>Quantité</th><th>Actions</th></tr>
+        <tr><th>Boisson</th><th>Quantité restante</th></tr>
       </thead>
       <tbody id="stock-table"></tbody>
     </table>
@@ -96,7 +102,7 @@
     <h2>Consommation</h2>
     <table>
       <thead>
-        <tr><th>Boisson</th><th>Quantité utilisée</th></tr>
+        <tr><th>Boisson</th><th>Quantité consommée</th><th>Action</th></tr>
       </thead>
       <tbody id="consumption-table"></tbody>
     </table>
@@ -126,55 +132,75 @@
       "Rhum blanc ambré"
     ];
 
-    const stock = {};
+    const stockDeBase = {};
     const consommation = {};
 
     boissons.forEach(nom => {
-      stock[nom] = 0;
+      stockDeBase[nom] = 0;
       consommation[nom] = 0;
     });
 
-    const boissonList = document.getElementById("boisson-list");
+    const storeTable = document.getElementById("store-table");
     const stockTable = document.getElementById("stock-table");
     const consumptionTable = document.getElementById("consumption-table");
 
     function refreshUI() {
-      boissonList.innerHTML = "";
+      storeTable.innerHTML = "";
       stockTable.innerHTML = "";
       consumptionTable.innerHTML = "";
 
       boissons.forEach(nom => {
-        boissonList.innerHTML += `<li>${nom}</li>`;
-
-        stockTable.innerHTML += `
+        // Store de base
+        storeTable.innerHTML += `
           <tr>
             <td>${nom}</td>
-            <td>${stock[nom]}</td>
+            <td>${stockDeBase[nom]}</td>
             <td>
-              <button class="btn" onclick="updateStock('${nom}', 1)">+</button>
-              <button class="btn" onclick="updateStock('${nom}', -1)">-</button>
+              <button class="btn" onclick="modifierStock('${nom}', 1)">+</button>
+              <button class="btn" onclick="modifierStock('${nom}', -1)">-</button>
             </td>
           </tr>
         `;
 
-        consumptionTable.innerHTML += `<tr><td>${nom}</td><td>${consommation[nom]}</td></tr>`;
+        // Stock réel (stock - consommation)
+        const stockRestant = stockDeBase[nom] - consommation[nom];
+        stockTable.innerHTML += `
+          <tr>
+            <td>${nom}</td>
+            <td>${Math.max(0, stockRestant)}</td>
+          </tr>
+        `;
+
+        // Consommation
+        consumptionTable.innerHTML += `
+          <tr>
+            <td>${nom}</td>
+            <td>${consommation[nom]}</td>
+            <td><button class="btn" onclick="consommer('${nom}')">Consommer</button></td>
+          </tr>
+        `;
       });
     }
 
-    function updateStock(boisson, amount) {
-      stock[boisson] = Math.max(0, stock[boisson] + amount);
+    function modifierStock(boisson, valeur) {
+      stockDeBase[boisson] = Math.max(0, stockDeBase[boisson] + valeur);
       refreshUI();
     }
 
-    refreshUI();
+    function consommer(boisson) {
+      if (stockDeBase[boisson] - consommation[boisson] > 0) {
+        consommation[boisson]++;
+        refreshUI();
+      } else {
+        alert("Plus de stock disponible pour : " + boisson);
+      }
+    }
 
-    // Tabs
-    const tabButtons = document.querySelectorAll(".tab-btn");
-    const sections = document.querySelectorAll("section");
-    tabButtons.forEach(btn => {
+    // Changement d'onglet
+    document.querySelectorAll(".tab-btn").forEach(btn => {
       btn.addEventListener("click", () => {
-        tabButtons.forEach(b => b.classList.remove("active"));
-        sections.forEach(s => s.classList.remove("active"));
+        document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
+        document.querySelectorAll("section").forEach(s => s.classList.remove("active"));
         btn.classList.add("active");
         document.getElementById(btn.dataset.target).classList.add("active");
       });
@@ -184,11 +210,12 @@
     setInterval(() => {
       const now = new Date();
       if (now.getHours() === 23 && now.getMinutes() === 45 && now.getSeconds() === 0) {
-        alert("Rappel : Mise à jour du stock à 23h45");
-        console.log("Stock complet:", stock);
-        console.log("Consommation du jour:", consommation);
+        alert("Rappel : Pense à faire la mise à jour du stock !");
+        console.log("Stock actuel :", stockDeBase);
+        console.log("Consommation du jour :", consommation);
       }
     }, 1000);
+
+    refreshUI();
   </script>
 </body>
-</html>
