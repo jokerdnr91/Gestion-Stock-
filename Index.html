@@ -1,4 +1,5 @@
-<!DOCTYPE html><html lang="fr">
+<!DOCTYPE html>
+<html lang="fr">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -74,18 +75,24 @@
     <button class="tab-btn active" data-target="store">Store de base</button>
     <button class="tab-btn" data-target="stock">Stock réel</button>
     <button class="tab-btn" data-target="consumption">Consommation</button>
-  </nav>  <section id="store" class="active">
+  </nav>
+
+  <section id="store" class="active">
     <h2>Liste des Boissons</h2>
     <ul id="boisson-list"></ul>
-  </section>  <section id="stock">
+  </section>
+
+  <section id="stock">
     <h2>Stock Réel</h2>
     <table>
       <thead>
-        <tr><th>Boisson</th><th>Quantité</th></tr>
+        <tr><th>Boisson</th><th>Quantité</th><th>Actions</th></tr>
       </thead>
       <tbody id="stock-table"></tbody>
     </table>
-  </section>  <section id="consumption">
+  </section>
+
+  <section id="consumption">
     <h2>Consommation</h2>
     <table>
       <thead>
@@ -93,7 +100,9 @@
       </thead>
       <tbody id="consumption-table"></tbody>
     </table>
-  </section>  <script>
+  </section>
+
+  <script>
     const boissons = [
       "Eau plate (Evian, Cristaline…) 50 cl",
       "Eau plate 1 L",
@@ -136,9 +145,25 @@
 
       boissons.forEach(nom => {
         boissonList.innerHTML += `<li>${nom}</li>`;
-        stockTable.innerHTML += `<tr><td>${nom}</td><td>${stock[nom]}</td></tr>`;
+
+        stockTable.innerHTML += `
+          <tr>
+            <td>${nom}</td>
+            <td>${stock[nom]}</td>
+            <td>
+              <button class="btn" onclick="updateStock('${nom}', 1)">+</button>
+              <button class="btn" onclick="updateStock('${nom}', -1)">-</button>
+            </td>
+          </tr>
+        `;
+
         consumptionTable.innerHTML += `<tr><td>${nom}</td><td>${consommation[nom]}</td></tr>`;
       });
+    }
+
+    function updateStock(boisson, amount) {
+      stock[boisson] = Math.max(0, stock[boisson] + amount);
+      refreshUI();
     }
 
     refreshUI();
@@ -164,5 +189,6 @@
         console.log("Consommation du jour:", consommation);
       }
     }, 1000);
-  </script></body>
+  </script>
+</body>
 </html>
